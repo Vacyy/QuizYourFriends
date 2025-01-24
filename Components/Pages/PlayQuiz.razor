@@ -1,0 +1,65 @@
+﻿@page "/PlayQuiz/{QuizId:int}"
+@using QuizYourFriendsWebApp.Components.Models
+@rendermode InteractiveServer
+@code {
+    QuizReader reader = new QuizReader(new ContextDB());
+    [Parameter]
+    public int QuizId { get; set; }
+    public int QuestionIndex { get; set; } = 0;
+    public int Score { get; set; } = 0;
+
+    public Quiz Quiz { get; set; }
+    public Question CurrentQuestion { get; set; }
+    public bool IsQuestionLast { get; set; } = false;
+    private int SelectedAnswerId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        if (Quiz == null)
+        {
+            Quiz = await reader.ReadByIdAsync(QuizId);
+        }
+        CurrentQuestion = Quiz.Questions[QuestionIndex];
+    }
+    private void HandleAnswerResult(bool isCorrect)
+    {
+        Console.WriteLine($"HandleAnswerResult executed. Answer is correct: {isCorrect}");
+        if (isCorrect)
+        {
+            Score++;
+        };
+        QuestionIndex++;
+        if (Quiz.Questions.Count == QuestionIndex)
+        {
+            CurrentQuestion = null;
+        }
+        else
+        {
+            CurrentQuestion = Quiz.Questions[QuestionIndex];
+
+        }
+        if (Quiz.Questions.Count == QuestionIndex + 1)
+        {
+            IsQuestionLast = true;
+        }
+        StateHasChanged();
+    }
+}
+
+@if (Quiz != null)
+{
+    <div class="div-for-quiz">
+        <h1>@Quiz.Name</h1>
+        @if (CurrentQuestion != null)
+        {
+            <DisplayQuestion Quiz="Quiz" Question="CurrentQuestion" OnAnswerSelected="HandleAnswerResult" IsQuestionLast="IsQuestionLast" />
+        }
+        else
+        {
+            <h3>Quiz Finished! Your score: @Score / @Quiz.Questions.Count</h3>
+        }
+    </div>
+}
+
+

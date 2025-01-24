@@ -1,0 +1,45 @@
+﻿@code {
+    [Parameter]
+    public int questionId { get; set; }
+    [Parameter]
+    public Quiz Quiz { get; set; }
+    public int AnswerAmount { get; set; } = 2;
+    public Question Question { get; set; } = new Question();
+    public bool isComponentVisible { get; set; } = true;
+    private void AddNewAnswer()
+    {
+        AnswerAmount++;
+    }
+    protected override void OnInitialized()
+    {
+        Quiz.Questions.Add(Question);
+    }
+    private void DeleteQuestion()
+    {
+        Quiz.Questions.Remove(Question);
+        isComponentVisible = false;
+    }
+}
+
+@if (isComponentVisible)
+{
+    <input type="text" id="QuestionContent" name="QuestionContent"
+           maxlength="240" size="30" placeholder="Type question here"
+           @bind=Question.Content />
+    @if (Quiz.Questions.First()!=Question)
+    {
+        <button type="button" class="X-button" @onclick=DeleteQuestion>🗙</button>
+    }
+    <div class="div-for-answers">
+        <p>Answers:</p>
+        @for (int i = 0; i < AnswerAmount; i++)
+        {
+            <p></p>
+            <AddAnswer questionid="questionId" Question="Question"></AddAnswer>
+        }
+        <p></p>
+        <button type="button" class="plus-button" @onclick=AddNewAnswer>➕</button>
+    </div>
+}
+
+

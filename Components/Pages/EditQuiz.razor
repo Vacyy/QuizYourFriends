@@ -1,0 +1,65 @@
+﻿@page "/EditQuiz/{QuizId:int}"
+@using QuizYourFriendsWebApp.Components.Models
+@inject NavigationManager navigationMenager;
+@rendermode InteractiveServer
+@code {
+    private QuizService quizService = new QuizService(new ContextDB());
+    QuizReader reader = new QuizReader(new ContextDB());
+
+    [Parameter]
+    public int QuizId { get; set; }
+    public Quiz Quiz { get; set; }
+    public int NewQuestionCount { get; set; } = 0;
+    protected override async Task OnInitializedAsync()
+    {
+        Quiz = await reader.ReadByIdAsync(QuizId);
+        Quiz.Id = 0;
+        foreach (var question in Quiz.Questions)
+        {
+            question.Id = 0;
+            foreach (var answer in question.Answers)
+            {
+                answer.Id = 0;
+            }
+        }
+
+    }
+    private void SendQuiz()
+    {
+        quizService.DeleteQuiz(QuizId);
+        quizService.AddQuizWithCascade(Quiz);
+        navigationMenager.NavigateTo("/", true);
+    }
+    private void AddNewQuestion()
+    {
+        NewQuestionCount++;
+    }
+}
+@if (Quiz != null)
+{
+    <div class="div-for-quiz">
+        <form>
+            <p>Quiz Name:</p>
+
+            <input type="text" id="QuizName" name="QuizName"
+                   maxlength="16"
+                   @bind=Quiz.Name />
+            <p></p>
+            <div class="div-for-questions">
+                <p>Questions:</p>
+                @foreach (var question in Quiz.Questions)
+                {
+                    <EditQuestion Question="question" Quiz="Quiz"></EditQuestion>
+                }
+                @for (int i = 0; i < NewQuestionCount; i++)
+                {
+                    <AddQuestion questionId="i" Quiz="Quiz"></AddQuestion>
+                    <p></p>
+                }
+                <button type="button" class="plus-button" @onclick=AddNewQuestion>➕</button>
+            </div>
+
+        </form>
+        <button type="button" class="btn-primary" @onclick=SendQuiz>Update Quiz</button>
+    </div>
+}

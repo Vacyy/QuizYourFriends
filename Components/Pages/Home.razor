@@ -1,0 +1,68 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@inject NavigationManager navigationMenager;
+@code {
+    QuizReader reader = new QuizReader(new ContextDB());
+    QuizService quizService = new QuizService(new ContextDB());
+
+    [Parameter]
+    public List<Quiz> Quizzes { get; set; } = new();
+    private int i = 1;
+    protected override async Task OnInitializedAsync()
+    {
+        Quizzes = await reader.ReadAllAsync();
+    }
+    public async Task DeleteQuiz(int QuizId)
+    {
+        await quizService.DeleteQuiz(QuizId);
+        navigationMenager.NavigateTo(navigationMenager.Uri, true);
+
+    }
+}
+<div class="div-for-quiz">
+    <h3>Lista Quizów</h3>
+
+    @if (Quizzes == null || !Quizzes.Any())
+    {
+        <p>Brak dostępnych quizów.</p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Quiz</th>
+                    <th>Questions</th>
+                    <th>Edit</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var quiz in Quizzes.Select((quiz, index) => new { Index = index + 1, Name = quiz.Name, QuestionAmount = quiz.Questions.Count(), QuizId = quiz.Id }))
+                {
+                    <tr>
+                        <td>@(i++)</td>
+
+                        <td>
+
+                            <NavLink class="nav-link" href=@($"/PlayQuiz/{quiz.QuizId}/")>
+                                @quiz.Name
+                            </NavLink>
+                        </td>
+                        <td>
+                            @quiz.QuestionAmount
+                        </td>
+                        <td>
+                            <NavLink class="nav-link" href=@($"/EditQuiz/{quiz.QuizId}/")>Edit</NavLink>
+                        </td>
+                        <td>
+                            <button type="submit" class="X-button" @onclick="()=> DeleteQuiz(quiz.QuizId)">🗙</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+    }
+</div>

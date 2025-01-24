@@ -1,0 +1,41 @@
+﻿@code {
+    [Parameter]
+    public Quiz Quiz { get; set; }
+    [Parameter]
+    public Question Question { get; set; }
+    [Parameter]
+    public EventCallback<bool> OnAnswerSelected { get; set; }
+    [Parameter]
+    public bool IsQuestionLast { get; set; }
+    private Answer SelectedAnswer { get; set; }
+    private bool isAnswerSelected = false;
+
+    private void HandleAnswer()
+    {
+        bool isCorrect = SelectedAnswer.Correct;
+        Console.WriteLine($"HandleAnswer invoked. isCorrect: {isCorrect}");
+        SelectedAnswer = null;
+        isAnswerSelected = false;
+        StateHasChanged();
+        OnAnswerSelected.InvokeAsync(isCorrect);
+
+    }
+}
+<div class="div-for-displayed-questions">
+<form>
+    <p>@Question.Content</p>
+    @foreach (var answer in Question.Answers)
+    {
+        <div class="form-check">
+            <input type="radio" class="form-check-input"
+                   id=@($"answerInput{answer.Id}")
+                   name="answerGroup"
+                   value="@answer.Id"
+                   checked="@answer.Id.Equals(SelectedAnswer?.Id)"
+                       @onclick="() => { SelectedAnswer = answer; isAnswerSelected = true; }" />
+            <label class="form-check-label" for=@($"answerInput{answer.Id}")>@answer.Content</label>
+        </div>
+    }
+</form>
+</div>
+<button @onclick="HandleAnswer" class="btn-primary large-btn" disabled="@(!isAnswerSelected)">@(IsQuestionLast ? "Finish Quiz" : "Next Question")</button>

@@ -1,0 +1,49 @@
+﻿@page "/CreateQuiz"
+@using QuizYourFriendsWebApp.Components.Models
+@inject NavigationManager navigationMenager;
+@rendermode InteractiveServer
+@code {
+    private QuizService quizService = new QuizService(new ContextDB());
+    public int QuestionCount { get; set; } = 1;
+    public Quiz Quiz { get; set; } = new Quiz();
+    private void AddNewQuestion()
+    {
+        QuestionCount++;
+    }
+    private void SendQuiz()
+    {
+        if (Quiz.Name == null)
+        {
+            Quiz.Name = "New Quiz";
+        }
+        foreach(var question in Quiz.Questions)
+        {
+            if (question.Content == null)
+            {
+                question.Content = "Empty Question";
+            }
+        }
+        quizService.AddQuizWithCascade(Quiz);
+        navigationMenager.NavigateTo("/", true);
+    }
+}
+<div class="div-for-quiz">
+    <form>
+        <p>Quiz Name:</p>
+        <input type="text" id="QuizName" name="QuizName"
+               maxlength="16" placeholder="Name your quiz"
+               @bind=Quiz.Name />
+        <p></p>
+        <div class="div-for-questions">
+            <p>Questions:</p>
+            @for (int i = 0; i < QuestionCount; i++)
+            {
+                <AddQuestion questionId="i" Quiz="Quiz"></AddQuestion>
+                <p></p>
+            }
+            <button type="button" class="plus-button" @onclick=AddNewQuestion>➕</button>
+        </div>
+
+    </form>
+    <button type="button" class="btn-primary" @onclick=SendQuiz>Create Quiz</button>
+</div>

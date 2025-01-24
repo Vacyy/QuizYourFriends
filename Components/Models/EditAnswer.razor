@@ -1,0 +1,45 @@
+﻿@code {
+    [Parameter]
+    public Answer Answer { get; set; }
+    [Parameter]
+    public Question Question { get; set; }
+    public bool isComponentVisible { get; set; } = true;
+
+    private void DeleteAnswer()
+    {
+        Question.Answers.Remove(Answer);
+        isComponentVisible = false;
+        if (Answer.Correct)
+        {
+            Question.Answers.First().Correct = true;
+        }
+    }
+    private void OnRadioClicked()
+    {
+        foreach (var answer in Question.Answers)
+        {
+            answer.Correct = false;
+        }
+        Answer.Correct = true;
+    }
+}
+
+@if (isComponentVisible)
+{
+    <label for="AnswerContent"></label>
+    <input type="text" id="AnswerContent" name="AnswerContent"
+           maxlength="120"
+           placeholder="Type answer content"
+           @bind=Answer.Content />
+    <input type="radio" class="form-check-input"
+           id=@($"answerInput{Answer.Id}")
+           name=@($"answerGroup{Question.Content}")
+           value="@Answer.Id"
+           checked="@Answer.Correct"
+           @onclick="OnRadioClicked" />
+    @if (Question.Answers[0] != Answer && Question.Answers[1] != Answer)
+    {
+        <button type="button" class="X-button" @onclick=DeleteAnswer>🗙</button>
+    }
+
+}
